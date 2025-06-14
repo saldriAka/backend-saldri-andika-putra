@@ -5,6 +5,7 @@ import (
 	"saldri/backend-saldri-andika-putra/domain"
 	"saldri/backend-saldri-andika-putra/dto"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 )
@@ -13,13 +14,15 @@ type transactionApi struct {
 	service     domain.TransactionService
 	userService domain.UsersService
 	store       *session.Store
+	validate    *validator.Validate
 }
 
-func NewTransactionApi(app *fiber.App, service domain.TransactionService, userService domain.UsersService, jwtMid fiber.Handler, store *session.Store) {
+func NewTransactionApi(app *fiber.App, service domain.TransactionService, userService domain.UsersService, jwtMid fiber.Handler, store *session.Store, validate *validator.Validate) {
 	h := &transactionApi{
 		service:     service,
 		userService: userService,
 		store:       store,
+		validate:    validate,
 	}
 
 	group := app.Group("/api/transactions", jwtMid)
@@ -43,14 +46,14 @@ func (h *transactionApi) Create(c *fiber.Ctx) error {
 
 	var req dto.CreateTransactionRequest
 
-	fmt.Println("BODY RAW:", string(c.Body()))
-
 	if err := c.BodyParser(&req); err != nil {
 		fmt.Println("UNMARSHAL ERROR:", err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateResponseError("format data tidak valid"))
 	}
 
-	fmt.Printf("Parsed Request: %+v\n", req)
+	if err := h.validate.Struct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateResponseError("data tidak valid: " + err.Error()))
+	}
 
 	if err := h.service.Create(c.Context(), req, userID); err != nil {
 		fmt.Println("ERROR TX:", err)

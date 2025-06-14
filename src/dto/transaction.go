@@ -3,8 +3,8 @@ package dto
 import "time"
 
 type CreateTransactionRequest struct {
-	ProductID int `json:"product_id"`
-	Quantity  int `json:"quantity"`
+	ProductID int `json:"product_id" validate:"required,gt=0"`
+	Quantity  int `json:"quantity" validate:"required,gt=0"`
 }
 
 type Transaction struct {

@@ -2,11 +2,11 @@ package dto
 
 type CreateProductRequest struct {
 	ID          uint    `gorm:"primaryKey;autoIncrement"`
-	Name        string  `json:"name"`
-	Price       float64 `json:"price"`
-	Description string  `json:"description"`
-	Stock       int     `json:"stock"`
-	MerchantID  string  `json:"-"`
+	Name        string  `json:"name" validate:"required,min=3"`
+	Price       float64 `json:"price" validate:"required,gt=0"`
+	Description string  `json:"description" validate:"required,min=5"`
+	Stock       int     `json:"stock" validate:"required,gte=0"`
+	MerchantID  string  `json:"merchant_id" validate:"required,uuid4"`
 }
 
 type Product struct {
@@ -19,8 +19,8 @@ type Product struct {
 }
 
 type UpdateProductRequest struct {
-	Name        string  `json:"name"`
-	Price       float64 `json:"price"`
-	Description string  `json:"description"`
-	Stock       int     `json:"stock"`
+	Name        string  `json:"name" validate:"omitempty,min=3"`
+	Price       float64 `json:"price" validate:"omitempty,gt=0"`
+	Description string  `json:"description" validate:"omitempty,min=5"`
+	Stock       int     `json:"stock" validate:"omitempty,gte=0"`
 }

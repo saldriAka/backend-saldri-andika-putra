@@ -6,17 +6,19 @@ import (
 	"saldri/backend-saldri-andika-putra/dto"
 	"strconv"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
 type productApi struct {
-	service domain.ProductService
-	store   *session.Store
+	service  domain.ProductService
+	store    *session.Store
+	validate *validator.Validate
 }
 
-func NewProductApi(app *fiber.App, service domain.ProductService, auth fiber.Handler, store *session.Store) {
-	handler := &productApi{service: service, store: store}
+func NewProductApi(app *fiber.App, service domain.ProductService, auth fiber.Handler, store *session.Store, validate *validator.Validate) {
+	handler := &productApi{service: service, store: store, validate: validate}
 
 	products := app.Group("/api/products", auth)
 
@@ -79,6 +81,10 @@ func (h *productApi) Create(c *fiber.Ctx) error {
 			JSON(dto.CreateResponseError("Format data tidak valid"))
 	}
 
+	if err := h.validate.Struct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateResponseError("data tidak valid: " + err.Error()))
+	}
+
 	req.MerchantID = userID
 
 	if err := h.service.Create(c.Context(), req); err != nil {
@@ -104,6 +110,10 @@ func (h *productApi) Update(c *fiber.Ctx) error {
 	var req dto.UpdateProductRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateResponseError("format tidak valid"))
+	}
+
+	if err := h.validate.Struct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateResponseError("data tidak valid: " + err.Error()))
 	}
 
 	err = h.service.Update(c.Context(), productID, req, merchantID)

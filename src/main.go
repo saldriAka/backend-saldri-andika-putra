@@ -9,7 +9,9 @@ import (
 	"saldri/backend-saldri-andika-putra/internal/repository"
 	"saldri/backend-saldri-andika-putra/internal/service"
 
+	"github.com/go-playground/validator/v10"
 	jwtMid "github.com/gofiber/contrib/jwt"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 )
@@ -18,6 +20,7 @@ func main() {
 	cnf := config.Get()
 	store := session.New()
 	dbConnection := connection.GetDatabase(cnf.Database)
+	validate := validator.New()
 
 	app := fiber.New()
 
@@ -40,8 +43,8 @@ func main() {
 
 	usersService := service.NewUsersService(usersRepo, cnf)
 
-	api.NewProductApi(app, productService, jwtMiddleware, store)
-	api.NewTransactionApi(app, txService, usersService, jwtMiddleware, store)
+	api.NewProductApi(app, productService, jwtMiddleware, store, validate)
+	api.NewTransactionApi(app, txService, usersService, jwtMiddleware, store, validate)
 	api.NewUsersApi(app, usersService, jwtMiddleware, store)
 
 	fmt.Println("Listening on", cnf.Server.Host+":"+cnf.Server.Port)
