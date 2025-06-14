@@ -1,4 +1,4 @@
-# 📂 Saldri — Simple E-commerce API
+# 📂 Simple E-commerce API
 
 RESTful API sederhana untuk platform e-commerce yang mendukung dua jenis pengguna: **Customer** dan **Merchant**. Proyek ini dibangun menggunakan Go (Fiber), GORM, MySQL, dan Docker Compose.
 
